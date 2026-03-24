@@ -1,0 +1,153 @@
+
+<style>
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 0.5rem 0; }
+  .filter-btn { padding: 6px 14px; font-size: 13px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+  .filter-btn.active { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); font-weight: 500; }
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; cursor: pointer; transition: border-color 0.15s; }
+  .card:hover { border-color: var(--color-border-primary); }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .card-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .badge-beginner { background: #EAF3DE; color: #3B6D11; }
+  .badge-intermediate { background: #FAEEDA; color: #854F0B; }
+  .badge-advanced { background: #FCEBEB; color: #A32D2D; }
+  .card-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin: 0 0 10px; }
+  .card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--color-background-secondary); color: var(--color-text-secondary); }
+  .tag-cyber { background: #EEEDFE; color: #534AB7; }
+  .time-label { font-size: 11px; color: var(--color-text-tertiary); margin-left: auto; }
+</style>
+
+<div style="padding: 1rem 0 0;">
+  <div class="filter-bar" id="filters">
+    <button class="filter-btn active" data-filter="all">All projects</button>
+    <button class="filter-btn" data-filter="beginner">Beginner</button>
+    <button class="filter-btn" data-filter="intermediate">Intermediate</button>
+    <button class="filter-btn" data-filter="advanced">Advanced</button>
+    <button class="filter-btn" data-filter="cyber">Cybersecurity</button>
+    <button class="filter-btn" data-filter="python">Pure Python</button>
+  </div>
+  <div class="projects-grid" id="grid"></div>
+</div>
+
+<script>
+const projects = [
+  {
+    title: "Password strength checker",
+    desc: "Analyse a password for length, complexity, common patterns, and assign it a score with feedback.",
+    level: "beginner", time: "~1h", tags: ["strings", "regex"], cyber: true
+  },
+  {
+    title: "Caesar cipher encoder/decoder",
+    desc: "Encrypt and decrypt messages using a Caesar shift. Add brute-force mode to crack unknown shifts.",
+    level: "beginner", time: "~1h", tags: ["strings", "loops"], cyber: true
+  },
+  {
+    title: "File organiser",
+    desc: "Sort files in a folder by extension into sub-folders automatically using os and shutil.",
+    level: "beginner", time: "~1h", tags: ["os", "shutil"], cyber: false
+  },
+  {
+    title: "To-do CLI app",
+    desc: "Command-line task manager that reads/writes tasks to a JSON file with add, list, and done commands.",
+    level: "beginner", time: "~1h", tags: ["json", "argparse"], cyber: false
+  },
+  {
+    title: "Hash file checker",
+    desc: "Compute MD5/SHA256 hashes of files and compare them to detect tampering or verify downloads.",
+    level: "beginner", time: "~1h", tags: ["hashlib", "files"], cyber: true
+  },
+  {
+    title: "Port scanner",
+    desc: "Scan a host for open ports using sockets. Add timeout handling and a simple results report.",
+    level: "intermediate", time: "~2h", tags: ["sockets", "threading"], cyber: true
+  },
+  {
+    title: "Log analyser",
+    desc: "Parse an Apache or Nginx access log, count IPs, detect repeated 404s, and flag suspicious patterns.",
+    level: "intermediate", time: "~3h", tags: ["regex", "collections"], cyber: true
+  },
+  {
+    title: "Web scraper with rate limiting",
+    desc: "Scrape a website using requests + BeautifulSoup, respect robots.txt, and store results in a CSV.",
+    level: "intermediate", time: "~3h", tags: ["requests", "bs4", "csv"], cyber: false
+  },
+  {
+    title: "Subdomain enumerator",
+    desc: "Try a wordlist of common subdomains via DNS resolution and report which ones are live.",
+    level: "intermediate", time: "~2h", tags: ["dns", "socket", "wordlists"], cyber: true
+  },
+  {
+    title: "Vigenère cipher breaker",
+    desc: "Implement the Vigenère cipher, then use index-of-coincidence to guess the key length and crack it.",
+    level: "intermediate", time: "~4h", tags: ["crypto", "statistics"], cyber: true
+  },
+  {
+    title: "URL/IP reputation checker",
+    desc: "Query VirusTotal or AbuseIPDB public APIs and print a risk summary for a given URL or IP.",
+    level: "intermediate", time: "~2h", tags: ["requests", "api", "json"], cyber: true
+  },
+  {
+    title: "REST API with Flask",
+    desc: "Build a small task API with GET/POST/DELETE endpoints, JSON responses, and basic error handling.",
+    level: "intermediate", time: "~3h", tags: ["flask", "REST"], cyber: false
+  },
+  {
+    title: "Network packet sniffer",
+    desc: "Capture live packets using Scapy, filter by protocol, and display source/destination summaries.",
+    level: "advanced", time: "~1 day", tags: ["scapy", "networking"], cyber: true
+  },
+  {
+    title: "Keylogger (ethical lab)",
+    desc: "Log keystrokes to a local file using pynput. Study how detection works and clean up after testing.",
+    level: "advanced", time: "~1 day", tags: ["pynput", "threads"], cyber: true
+  },
+  {
+    title: "Simple SIEM dashboard",
+    desc: "Parse multiple log sources, aggregate events, and render a text-based or HTML threat summary.",
+    level: "advanced", time: "~1 day", tags: ["parsing", "reporting"], cyber: true
+  },
+  {
+    title: "Async web crawler",
+    desc: "Build a multi-URL crawler with asyncio and aiohttp that respects depth limits and stores a sitemap.",
+    level: "advanced", time: "~1 day", tags: ["asyncio", "aiohttp"], cyber: false
+  }
+];
+
+const grid = document.getElementById("grid");
+const filterBtns = document.querySelectorAll(".filter-btn");
+
+function render(filter) {
+  const filtered = projects.filter(p => {
+    if (filter === "all") return true;
+    if (filter === "cyber") return p.cyber;
+    if (filter === "python") return !p.cyber;
+    return p.level === filter;
+  });
+  grid.innerHTML = filtered.map(p => `
+    <div class="card" onclick="sendPrompt('Give me a step-by-step guide and starter code for the Python project: ${p.title}')">
+      <div class="card-top">
+        <p class="card-title">${p.title}</p>
+        <span class="badge badge-${p.level}">${p.level}</span>
+      </div>
+      <p class="card-desc">${p.desc}</p>
+      <div class="card-meta">
+        ${p.cyber ? '<span class="tag tag-cyber">cybersecurity</span>' : ''}
+        ${p.tags.map(t => `<span class="tag">${t}</span>`).join("")}
+        <span class="time-label">${p.time}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+filterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    filterBtns.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    render(btn.dataset.filter);
+  });
+});
+
+render("all");
+</script>
