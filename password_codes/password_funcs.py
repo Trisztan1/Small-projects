@@ -1,4 +1,3 @@
-import pprint
 import re
 import math
 import random
@@ -25,7 +24,7 @@ class Password():
         self.common_pswrds.clear()
 
         try:
-            with open("../100k-most-used-passwords-NCSC.txt", "r", newline="", encoding='utf-8') as file:
+            with open("./100k-most-used-passwords-NCSC.txt", "r", newline="", encoding='utf-8') as file:
                 self.common_pswrds = [item.strip() for item in file]
 
         except Exception as e:
@@ -35,31 +34,21 @@ class Password():
         self.common_names.clear()
 
         try:
-            with open("../names.txt", "r", newline = "", encoding="utf-8") as file:
+            with open("./names.txt", "r", newline = "", encoding="utf-8") as file:
                 self.common_names = [item.strip() for item in file]
 
         except Exception as e:
             raise RuntimeError("Failed to load common names file") from e
 
-    
+
     def is_common_name_true(self):
         self.is_common_name = False
-    
-        if self.password != None:
-            for name in self.common_names:
-                # rf is needed because without f name is not a variable
-                if re.search(rf"(?i){name}", self.password):
-                    self.is_common_name = True
-                    break
-        
-                
-    @property
-    def password(self):
-        return self._password
-    
-    @password.setter
-    def password(self, value):
-        self._password = value
+
+        if self.password_lower != None:
+            flag = any(name.lower() in self.password_lower for name in self.common_names)
+            self.is_common_name = flag
+        else:
+            self.is_common_name = False
     
 
     def password_correctness(self):
@@ -207,7 +196,11 @@ def main():
                         passwrd.password_correctness()
                     except Exception as e:
                         print(e)
-                        continue
+                        u_input = choice_question()
+                        if u_input:
+                            continue
+                        else:
+                            break
 
                     print(passwrd.password_hardness())
 
@@ -234,14 +227,26 @@ def main():
 
                             for item in password_container:
                                 passwrd = Password(item)
+                                passwrd.password_correctness()
                                 passwrds_with_values.update({item: passwrd.password_hardness()})
                                 
                             for i, item in enumerate(passwrds_with_values):
                                 print(f"{i + 1}. {item}: {passwrds_with_values[item]}")
                         
                             break
-                        except:
-                            continue
+                        except Exception as e:
+                            exception_list = {
+                            "You can't use only letters!", 
+                            "You can't use only numbers!", 
+                            "You can't use only special characters!",
+                            "Your password is considered a known/common password!",
+                            "There is a common name in your password, pleas omit the name!"
+                            }
+
+                            if str(e) in exception_list:
+                                continue
+                            else:
+                                raise
 
                     if choice_question():
                         continue
