@@ -1,8 +1,10 @@
 import csv
 import os
+from numpy import append
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 import streamlit as st
 import pandas as pd
+import sys
 
 
 all_x_points = []
@@ -15,11 +17,66 @@ def main():
     if Stremlit:
         streamlit_app()
     
-    
+    while True:
+        try:
+            v_range = fget_range()
+            collatz(v_range[0], v_range[1])
+            try:
+                csv_files = list_files()
+            except Exception as e:
+                raise RuntimeError(e)
+
+            while True:
+                print(f"\nChoose a pair of x and y out of {len(csv_files) / 2} pairs.\n")
+                try:
+                    u_input = int(input("Chooce a number you will get an x and y pair: "))
+                except ValueError:
+                    continue
+
+                file_name = []
+
+                for f in csv_files:
+                    if f.startswith(str(u_input)):
+                        file_name.append(f)
+
+                x_data_points = pd.read_csv(f"./data/{file_name[0]}", header=None)[0].tolist()
+                y_data_points = pd.read_csv(f"./data/{file_name[1]}", header=None)[0].tolist()
+
+                print(x_data_points)
+                print()
+                print(y_data_points)
+
+                choice = input("Would you like to delete the data point files? [yes/no]: ").strip().lower()
+                if choice == "yes":
+                    file_remover()
+                    print("Files are removed.")
+                elif choice == "no":
+                    choice = input("Would you like to select another file? [yes/no]: ").strip().lower()
+                    if choice == "yes":
+                        continue
+
+                choice = input("Would you like to start over? [yes/no]: ").strip().lower()
+                if choice == "yes":
+                    break
+
+                choice = input("Wpuld you like to exit? [yes/no]: ").strip().lower()
+                if choice == "yes":
+                    sys.exit("Thanks for using the program!")
+                else:
+                    print("I will drop you at the start so you can start over!")
+                    break
+            
+        except EOFError:
+            sys.exit("Thanks for using the program!")
+
+
+
     
 
     
 def collatz(start: int | None = None, end: int | None = None):
+    all_x_points.clear()
+    all_y_points.clear()
     get_range = (start, end)
     strt_value = get_range[0]
     file_remover()
